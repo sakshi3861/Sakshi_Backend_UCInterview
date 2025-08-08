@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friends API - Compact</title>
+    <style>
+        
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>☕ Friends API</h1>
+        <p>MongoDB Backend with CRUD Operations</p>
+    </div>
+
+    <div class="nav">
+        <button class="nav-btn active" onclick="showPage('demo')">🚀 API Demo</button>
+        <button class="nav-btn" onclick="showPage('code')">💻 Code</button>
+    </div>
+
+    <!-- PAGE 1: Demo -->
+    <div id="demo-page" class="page active">
+        <div class="section seed-section">
+            <h3>🌱 Seed Database</h3>
+            <p>Load all 236 Friends episodes</p>
+            <button class="seed-btn" onclick="seedDB()">Seed Now</button>
+            <div class="response" id="seed-response"></div>
+        </div>
+
+        <div class="section">
+            <h3>📊 Episode Format</h3>
+            <div class="code">{"id":40646,"name":"The One Where Monica Gets a Roommate","season":1,"number":1,"airdate":"1994-09-22","summary":"Monica's old friend Rachel moves in..."}</div>
+        </div>
+
+        <div class="section">
+            <h3>🔧 API Endpoints</h3>
+            <div class="api-grid">
+                <div class="api-card">
+                    <span class="method post">POST</span>
+                    <div class="endpoint">/api/episodes</div>
+                    <p>Create episode</p>
+                    <button class="btn" onclick="demo('create')">Try It</button>
+                    <div class="response" id="create-response"></div>
+                </div>
+                <div class="api-card">
+                    <span class="method get">GET</span>
+                    <div class="endpoint">/api/episodes</div>
+                    <p>Get all episodes</p>
+                    <button class="btn" onclick="demo('getall')">Try It</button>
+                    <div class="response" id="getall-response"></div>
+                </div>
+                <div class="api-card">
+                    <span class="method get">GET</span>
+                    <div class="endpoint">/api/episodes/:id</div>
+                    <p>Get by ID</p>
+                    <button class="btn" onclick="demo('getone')">Try It</button>
+                    <div class="response" id="getone-response"></div>
+                </div>
+                <div class="api-card">
+                    <span class="method put">PUT</span>
+                    <div class="endpoint">/api/episodes/:id</div>
+                    <p>Update episode</p>
+                    <button class="btn" onclick="demo('update')">Try It</button>
+                    <div class="response" id="update-response"></div>
+                </div>
+                <div class="api-card">
+                    <span class="method delete">DELETE</span>
+                    <div class="endpoint">/api/episodes/:id</div>
+                    <p>Delete episode</p>
+                    <button class="btn" onclick="demo('delete')">Try It</button>
+                    <div class="response" id="delete-response"></div>
+                </div>
+                <div class="api-card">
+                    <span class="method get">GET</span>
+                    <div class="endpoint">/api/episodes/search</div>
+                    <p>Search episodes</p>
+                    <button class="btn" onclick="demo('search')">Try It</button>
+                    <div class="response" id="search-response"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 2: Code -->
+    <div id="code-page" class="page">
+        <div class="section">
+            <h3>📁 Project Structure</h3>
+            <div class="code">friends-api/
+├── models/Episode.js
+├── controllers/episodeController.js  
+├── routes/episodeRoutes.js
+├── app.js
+└── package.json</div>
+        </div>
+
+        <div class="section">
+            <h3>📄 Episode Model</h3>
+            <div class="code">const mongoose = require('mongoose');
+
+const episodeSchema = new mongoose.Schema({
+  id: { type: Number, required: true, unique: true },
+  name: { type: String, required: true },
+  season: { type: Number, required: true },
+  number: { type: Number, required: true },
+  airdate: { type: String, required: true },
+  summary: { type: String, required: true }
+});
+
+module.exports = mongoose.model('Episode', episodeSchema);</div>
+        </div>
+
+        <div class="section">
+            <h3>📄 Controller</h3>
+            <div class="code">const Episode = require('../models/Episode');
+const axios = require('axios');
+
+// Seed database
+exports.seedEpisodes = async (req, res) => {
+  try {
+    const show = await axios.get('https://api.tvmaze.com/singlesearch/shows?q=friends');
+    const episodes = await axios.get(`https://api.tvmaze.com/shows/${show.data.id}/episodes`);
+    
+    const data = episodes.data.map(ep => ({
+      id: ep.id, name: ep.name, season: ep.season,
+      number: ep.number, airdate: ep.airdate,
+      summary: ep.summary?.replace(/<[^>]*>/g, '') || 'No summary'
+    }));
+    
+    await Episode.deleteMany({});
+    await Episode.insertMany(data);
+    res.status(201).json({ success: true, total: data.length });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// CRUD operations
+exports.createEpisode = async (req, res) => {
+  try {
+    const episode = new Episode(req.body);
+    await episode.save();
+    res.status(201).json({ success: true, data: episode });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
+exports.getAllEpisodes = async (req, res) => {
+  try {
+    const episodes = await Episode.find().limit(10).sort({ season: 1, number: 1 });
+    res.json({ success: true, count: episodes.length, data: episodes });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.getEpisodeById = async (req, res) => {
+  try {
+    const episode = await Episode.findOne({ id: req.params.id });
+    if (!episode) return res.status(404).json({ success: false, error: 'Not found' });
+    res.json({ success: true, data: episode });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.updateEpisode = async (req, res) => {
+  try {
+    const episode = await Episode.findOneAndUpdate({ id: req.params.id }, req.body, { new: true });
+    if (!episode) return res.status(404).json({ success: false, error: 'Not found' });
+    res.json({ success: true, data: episode });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
+exports.deleteEpisode = async (req, res) => {
+  try {
+    const episode = await Episode.findOneAndDelete({ id: req.params.id });
+    if (!episode) return res.status(404).json({ success: false, error: 'Not found' });
+    res.json({ success: true, message: 'Deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.searchEpisodes = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) return res.status(400).json({ success: false, error: 'Query required' });
+    
+    const episodes = await Episode.find({
+      $or: [
+        { name: { $regex: q, $options: 'i' } },
+        { summary: { $regex: q, $options: 'i' } }
+      ]
+    });
+    res.json({ success: true, count: episodes.length, data: episodes });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};</div>
+        </div>
+
+        <div class="section">
+            <h3>📄 Routes & App</h3>
+            <div class="code">// routes/episodeRoutes.js
+const express = require('express');
+const router = express.Router();
+const controller = require('../controllers/episodeController');
+
+router.post('/seed', controller.seedEpisodes);
+router.post('/', controller.createEpisode);
+router.get('/search', controller.searchEpisodes);
+router.get('/', controller.getAllEpisodes);
+router.get('/:id', controller.getEpisodeById);
+router.put('/:id', controller.updateEpisode);
+router.delete('/:id', controller.deleteEpisode);
+
+module.exports = router;
+
+// app.js
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const episodeRoutes = require('./routes/episodeRoutes');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+mongoose.connect('mongodb://localhost:27017/friends-api');
+app.use('/api/episodes', episodeRoutes);
+
+app.listen(3000, () => console.log('Server running on port 3000'));</div>
+        </div>
+
+        <div class="section">
+            <h3>📄 Package.json</h3>
+            <div class="code">{
+  "name": "friends-api",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0",
+    "axios": "^1.5.0",
+    "cors": "^2.8.5"
+  }
+}</div>
+        </div>
+    </div>
+
+    <script>
+        let mockDB = [];
+        let seeded = false;
+
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            if (page === 'demo') {
+                document.getElementById('demo-page').classList.add('active');
+                document.querySelectorAll('.nav-btn')[0].classList.add('active');
+            } else {
+                document.getElementById('code-page').classList.add('active');
+                document.querySelectorAll('.nav-btn')[1].classList.add('active');
+            }
+        }
+
+        async function seedDB() {
+            try {
+                const show = await fetch('https://api.tvmaze.com/singlesearch/shows?q=friends');
+                const showData = await show.json();
+                const eps = await fetch(`https://api.tvmaze.com/shows/${showData.id}/episodes`);
+                const epsData = await eps.json();
+                
+                mockDB = epsData.map(ep => ({
+                    id: ep.id, name: ep.name, season: ep.season,
+                    number: ep.number, airdate: ep.airdate,
+                    summary: ep.summary?.replace(/<[^>]*>/g, '') || 'No summary'
+                }));
+                
+                seeded = true;
+                showResponse('seed', { success: true, total: mockDB.length, sample: mockDB[0] });
+            } catch (error) {
+                showResponse('seed', { success: false, error: error.message });
+            }
+        }
+
+        function demo(type) {
+            if (!seeded && type !== 'create') {
+                showResponse(type, { success: false, error: 'Please seed database first' });
+                return;
+            }
+
+            const responses = {
+                create: { success: true, data: { id: 99999, name: "New Episode", season: 11, number: 1, airdate: "2024-01-01", summary: "Created via API" }},
+                getall: { success: true, count: 5, data: mockDB.slice(0, 5) },
+                getone: { success: true, data: mockDB[0] || { id: 40646, name: "The One Where Monica Gets a Roommate", season: 1, number: 1, airdate: "1994-09-22", summary: "Monica's old friend Rachel moves in..." }},
+                update: { success: true, data: { id: 40646, name: "Updated Episode", season: 1, number: 1, airdate: "1994-09-22", summary: "Updated summary" }},
+                delete: { success: true, message: "Episode deleted" },
+                search: { success: true, count: 2, query: "roommate", data: mockDB.filter(ep => ep.name.toLowerCase().includes('roommate')).slice(0, 2) }
+            };
+
+            showResponse(type, responses[type]);
+        }
+
+        function showResponse(type, data) {
+            const div = document.getElementById(`${type}-response`);
+            div.style.display = 'block';
+            div.textContent = JSON.stringify(data, null, 2);
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bf638427261c69',t:'MTc1NDY2MDA0MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

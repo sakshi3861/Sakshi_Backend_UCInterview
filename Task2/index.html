@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central Perk Backend Service - The Gunther of Data</title>
+    <link href="styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Central Perk Backend Service</h1>
+            <p>"Could this API BE any more organized?" - The Gunther of Data</p>
+        </div>
+        
+        <div class="api-routes">
+            <div class="route-card">
+                <div class="route-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint">/api/show</span>
+                </div>
+                <div class="description">
+                    Get the main show information - all the basic gossip about our favorite group of friends, just like Gunther knows everything about Central Perk!
+                </div>
+                <button class="try-button" onclick="tryRoute('show')">Try This Route</button>
+                <div class="response-area" id="response-show"></div>
+            </div>
+            
+            <div class="route-card">
+                <div class="route-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint">/api/characters</span>
+                </div>
+                <div class="description">
+                    Get detailed info about all six friends - their secrets, quirks, and everything Gunther has observed from behind the coffee counter.
+                </div>
+                <button class="try-button" onclick="tryRoute('characters')">Meet The Gang</button>
+                <div class="response-area" id="response-characters"></div>
+            </div>
+            
+            <div class="route-card">
+                <div class="route-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint">/api/episodes</span>
+                </div>
+                <div class="description">
+                    Browse through all episodes - every story, every laugh, every "We were on a break!" moment, perfectly catalogued.
+                </div>
+                <button class="try-button" onclick="tryRoute('episodes')">Browse Episodes</button>
+                <div class="response-area" id="response-episodes"></div>
+            </div>
+            
+            <div class="route-card">
+                <div class="route-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint">/api/secrets</span>
+                </div>
+                <div class="description">
+                    The juiciest secrets and behind-the-scenes stories - things only Gunther would know from years of silent observation.
+                </div>
+                <button class="try-button" onclick="tryRoute('secrets')">Spill The Tea</button>
+                <div class="response-area" id="response-secrets"></div>
+            </div>
+            
+            <div class="route-card">
+                <div class="route-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint">/api/gossip</span>
+                </div>
+                <div class="description">
+                    Add new gossip to the collection - because even Gunther needs to update his mental database sometimes.
+                </div>
+                <button class="try-button" onclick="tryRoute('gossip')">Add Gossip</button>
+                <div class="response-area" id="response-gossip"></div>
+            </div>
+            
+            <div class="route-card">
+                <div class="route-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint">/api/quotes</span>
+                </div>
+                <div class="description">
+                    Random memorable quotes from the show - including Phoebe's "Smelly Cat" lyrics and all the other iconic moments.
+                </div>
+                <button class="try-button" onclick="tryRoute('quotes')">Get Random Quote</button>
+                <div class="response-area" id="response-quotes"></div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>Live Demo: Real TVMaze API Integration</h2>
+            <p style="text-align: center; margin-bottom: 20px; color: #666;">
+                Watch Gunther fetch real Friends data from the TVMaze API!
+            </p>
+            <div class="live-demo">
+                <button onclick="fetchRealData()">Fetch Real Friends Data from TVMaze API</button>
+            </div>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Gunther is brewing the perfect response...</p>
+            </div>
+            <div class="response-area" id="real-api-response" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
