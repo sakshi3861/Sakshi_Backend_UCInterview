@@ -10,31 +10,31 @@
 </head>
 <body>
     <div class="header">
-        <h1>☕ Friends API</h1>
+        <h1>Friends API</h1>
         <p>MongoDB Backend with CRUD Operations</p>
     </div>
 
     <div class="nav">
-        <button class="nav-btn active" onclick="showPage('demo')">🚀 API Demo</button>
-        <button class="nav-btn" onclick="showPage('code')">💻 Code</button>
+        <button class="nav-btn active" onclick="showPage('demo')">API Demo</button>
+        <button class="nav-btn" onclick="showPage('code')">Code</button>
     </div>
 
     <!-- PAGE 1: Demo -->
     <div id="demo-page" class="page active">
         <div class="section seed-section">
-            <h3>🌱 Seed Database</h3>
+            <h3>Seed Database</h3>
             <p>Load all 236 Friends episodes</p>
             <button class="seed-btn" onclick="seedDB()">Seed Now</button>
             <div class="response" id="seed-response"></div>
         </div>
 
         <div class="section">
-            <h3>📊 Episode Format</h3>
+            <h3>Episode Format</h3>
             <div class="code">{"id":40646,"name":"The One Where Monica Gets a Roommate","season":1,"number":1,"airdate":"1994-09-22","summary":"Monica's old friend Rachel moves in..."}</div>
         </div>
 
         <div class="section">
-            <h3>🔧 API Endpoints</h3>
+            <h3>API Endpoints</h3>
             <div class="api-grid">
                 <div class="api-card">
                     <span class="method post">POST</span>
@@ -85,7 +85,7 @@
     <!-- PAGE 2: Code -->
     <div id="code-page" class="page">
         <div class="section">
-            <h3>📁 Project Structure</h3>
+            <h3>Project Structure</h3>
             <div class="code">friends-api/
 ├── models/Episode.js
 ├── controllers/episodeController.js  
@@ -95,7 +95,7 @@
         </div>
 
         <div class="section">
-            <h3>📄 Episode Model</h3>
+            <h3>Episode Model</h3>
             <div class="code">const mongoose = require('mongoose');
 
 const episodeSchema = new mongoose.Schema({
@@ -111,7 +111,7 @@ module.exports = mongoose.model('Episode', episodeSchema);</div>
         </div>
 
         <div class="section">
-            <h3>📄 Controller</h3>
+            <h3>Controller</h3>
             <div class="code">const Episode = require('../models/Episode');
 const axios = require('axios');
 
@@ -204,7 +204,7 @@ exports.searchEpisodes = async (req, res) => {
         </div>
 
         <div class="section">
-            <h3>📄 Routes & App</h3>
+            <h3>Routes & App</h3>
             <div class="code">// routes/episodeRoutes.js
 const express = require('express');
 const router = express.Router();
@@ -237,7 +237,7 @@ app.listen(3000, () => console.log('Server running on port 3000'));</div>
         </div>
 
         <div class="section">
-            <h3>📄 Package.json</h3>
+            <h3>Package.json</h3>
             <div class="code">{
   "name": "friends-api",
   "version": "1.0.0",
@@ -255,66 +255,6 @@ app.listen(3000, () => console.log('Server running on port 3000'));</div>
         </div>
     </div>
 
-    <script>
-        let mockDB = [];
-        let seeded = false;
-
-        function showPage(page) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            
-            if (page === 'demo') {
-                document.getElementById('demo-page').classList.add('active');
-                document.querySelectorAll('.nav-btn')[0].classList.add('active');
-            } else {
-                document.getElementById('code-page').classList.add('active');
-                document.querySelectorAll('.nav-btn')[1].classList.add('active');
-            }
-        }
-
-        async function seedDB() {
-            try {
-                const show = await fetch('https://api.tvmaze.com/singlesearch/shows?q=friends');
-                const showData = await show.json();
-                const eps = await fetch(`https://api.tvmaze.com/shows/${showData.id}/episodes`);
-                const epsData = await eps.json();
-                
-                mockDB = epsData.map(ep => ({
-                    id: ep.id, name: ep.name, season: ep.season,
-                    number: ep.number, airdate: ep.airdate,
-                    summary: ep.summary?.replace(/<[^>]*>/g, '') || 'No summary'
-                }));
-                
-                seeded = true;
-                showResponse('seed', { success: true, total: mockDB.length, sample: mockDB[0] });
-            } catch (error) {
-                showResponse('seed', { success: false, error: error.message });
-            }
-        }
-
-        function demo(type) {
-            if (!seeded && type !== 'create') {
-                showResponse(type, { success: false, error: 'Please seed database first' });
-                return;
-            }
-
-            const responses = {
-                create: { success: true, data: { id: 99999, name: "New Episode", season: 11, number: 1, airdate: "2024-01-01", summary: "Created via API" }},
-                getall: { success: true, count: 5, data: mockDB.slice(0, 5) },
-                getone: { success: true, data: mockDB[0] || { id: 40646, name: "The One Where Monica Gets a Roommate", season: 1, number: 1, airdate: "1994-09-22", summary: "Monica's old friend Rachel moves in..." }},
-                update: { success: true, data: { id: 40646, name: "Updated Episode", season: 1, number: 1, airdate: "1994-09-22", summary: "Updated summary" }},
-                delete: { success: true, message: "Episode deleted" },
-                search: { success: true, count: 2, query: "roommate", data: mockDB.filter(ep => ep.name.toLowerCase().includes('roommate')).slice(0, 2) }
-            };
-
-            showResponse(type, responses[type]);
-        }
-
-        function showResponse(type, data) {
-            const div = document.getElementById(`${type}-response`);
-            div.style.display = 'block';
-            div.textContent = JSON.stringify(data, null, 2);
-        }
-    </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96bf638427261c69',t:'MTc1NDY2MDA0MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+    <script src="script.js"></script>
+</body>
 </html>
